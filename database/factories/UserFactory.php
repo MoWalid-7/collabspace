@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\AvailabilityStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -30,6 +31,13 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'avatar' => null,
+            'phone' => null,
+            'job_title' => null,
+            'years_of_experience' => null,
+            'about' => null,
+            'availability_status' => AvailabilityStatus::Available->value,
+            'google_id' => null,
         ];
     }
 
