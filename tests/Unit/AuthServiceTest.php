@@ -20,9 +20,9 @@ it('registers a user, creates an admin workspace, and issues a token atomically'
     $this->freezeTime();
 
     $user = User::factory()->make();
-    $user->id = 12;
+    $user->setAttribute('id', 12);
     $workspace = new Workspace;
-    $workspace->id = 24;
+    $workspace->setAttribute('id', 24);
     $token = new IssuedApiTokenData('plain-token', CarbonImmutable::now()->addDay());
 
     $users = Mockery::mock(UserRepositoryInterface::class);
@@ -69,7 +69,7 @@ it('issues a thirty-day token when login requests remember me', function () {
     $this->freezeTime();
 
     $user = User::factory()->make();
-    $user->password = Hash::make('strong-password');
+    $user->setAttribute('password', Hash::make('strong-password'));
     $token = new IssuedApiTokenData('long-token', CarbonImmutable::now()->addDays(30));
     $users = Mockery::mock(UserRepositoryInterface::class);
     $workspaces = Mockery::mock(WorkspaceRepositoryInterface::class);
