@@ -10,6 +10,7 @@ readonly class ProjectStatsData
         public int $inProgress,
         public int $inReview,
         public int $completed,
+        public int $overdue,
         public int $progressPercent,
     ) {}
 }

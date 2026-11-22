@@ -2,11 +2,15 @@
 
 namespace App\Providers;
 
+use App\Models\Comment;
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Workspace;
+use App\Policies\CommentPolicy;
 use App\Policies\ProjectPolicy;
+use App\Policies\TaskPolicy;
 use App\Policies\TeamPolicy;
 use App\Policies\WorkspacePolicy;
 use App\Support\CurrentWorkspace;
@@ -35,6 +39,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Workspace::class, WorkspacePolicy::class);
         Gate::policy(Team::class, TeamPolicy::class);
         Gate::policy(Project::class, ProjectPolicy::class);
+        Gate::policy(Task::class, TaskPolicy::class);
+        Gate::policy(Comment::class, CommentPolicy::class);
 
         ResetPassword::createUrlUsing(function (User $user, string $token): string {
             $url = rtrim((string) config('app.frontend_url'), '/').'/reset-password';

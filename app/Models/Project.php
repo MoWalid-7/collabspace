@@ -12,8 +12,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string|null $description
+ * @property string $type
+ * @property ProjectPriority $priority
+ * @property ProjectStatus $status
+ * @property Carbon|null $start_date
+ * @property Carbon|null $deadline
+ * @property int $created_by
+ */
 #[Fillable([
     'workspace_id',
     'name',
@@ -53,6 +66,14 @@ class Project extends Model
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'project_team', 'project_id', 'team_id');
+    }
+
+    /**
+     * @return HasMany<Task, $this>
+     */
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
     }
 
     public function scopeVisibleTo(Builder $query, int $userId): void

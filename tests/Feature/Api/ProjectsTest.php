@@ -2,8 +2,10 @@
 
 use App\Enums\ProjectPriority;
 use App\Enums\ProjectStatus;
+use App\Enums\TaskStatus;
 use App\Enums\WorkspaceRole;
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Workspace;
@@ -55,6 +57,48 @@ it('creates projects with the creator as a member and returns detailed project s
         ->assertJsonPath('data.project.name', 'Launch');
 
     $project = Project::query()->where('name', 'Launch')->firstOrFail();
+    Task::factory()->create([
+        'workspace_id' => $workspace->id,
+        'project_id' => $project->id,
+        'created_by' => $admin->id,
+        'status' => TaskStatus::Todo,
+        'due_date' => today()->subDay(),
+    ]);
+    Task::factory()->create([
+        'workspace_id' => $workspace->id,
+        'project_id' => $project->id,
+        'created_by' => $admin->id,
+        'status' => TaskStatus::InProgress,
+        'due_date' => today()->subDay(),
+    ]);
+    Task::factory()->create([
+        'workspace_id' => $workspace->id,
+        'project_id' => $project->id,
+        'created_by' => $admin->id,
+        'status' => TaskStatus::InReview,
+        'due_date' => today(),
+    ]);
+    Task::factory()->create([
+        'workspace_id' => $workspace->id,
+        'project_id' => $project->id,
+        'created_by' => $admin->id,
+        'status' => TaskStatus::Completed,
+        'due_date' => today()->subDay(),
+    ]);
+    Task::factory()->create([
+        'workspace_id' => $workspace->id,
+        'project_id' => $project->id,
+        'created_by' => $admin->id,
+        'status' => TaskStatus::Todo,
+        'due_date' => today(),
+    ]);
+    Task::factory()->create([
+        'workspace_id' => $workspace->id,
+        'project_id' => $project->id,
+        'created_by' => $admin->id,
+        'status' => TaskStatus::Todo,
+        'due_date' => today()->subDay(),
+    ]);
     $this->assertDatabaseHas('project_user', [
         'project_id' => $project->id,
         'user_id' => $admin->id,
@@ -72,8 +116,13 @@ it('creates projects with the creator as a member and returns detailed project s
         ->withHeader('X-Workspace-Id', (string) $workspace->id)
         ->getJson("/api/v1/projects/{$project->id}")
         ->assertOk()
-        ->assertJsonPath('data.project.stats.total_tasks', 0)
-        ->assertJsonPath('data.project.stats.progress_percent', 0)
+        ->assertJsonPath('data.project.stats.total_tasks', 6)
+        ->assertJsonPath('data.project.stats.pending', 3)
+        ->assertJsonPath('data.project.stats.in_progress', 1)
+        ->assertJsonPath('data.project.stats.in_review', 1)
+        ->assertJsonPath('data.project.stats.completed', 1)
+        ->assertJsonPath('data.project.stats.overdue', 3)
+        ->assertJsonPath('data.project.stats.progress_percent', 17)
         ->assertJsonPath('data.project.teams.0.id', $team->id);
 });
 
@@ -102,6 +151,20 @@ it('updates, lists, and soft deletes projects', function () {
         ->withHeader('X-Workspace-Id', (string) $workspace->id)
         ->getJson("/api/v1/projects/{$project->id}")
         ->assertNotFound();
+});
+
+it('returns zero task stats when the project has no tasks', function () {
+    $admin = User::factory()->create();
+    $workspace = projectTestWorkspace($admin);
+    $project = makeProject($workspace, $admin, 'Empty project');
+
+    $this->actingAs($admin, 'sanctum')
+        ->withHeader('X-Workspace-Id', (string) $workspace->id)
+        ->getJson("/api/v1/projects/{$project->id}")
+        ->assertOk()
+        ->assertJsonPath('data.project.stats.total_tasks', 0)
+        ->assertJsonPath('data.project.stats.overdue', 0)
+        ->assertJsonPath('data.project.stats.progress_percent', 0);
 });
 
 it('rejects project updates whose deadline precedes the existing start date', function () {

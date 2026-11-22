@@ -39,6 +39,7 @@ class ProjectResource extends JsonResource
                 'in_progress' => $details->stats->inProgress,
                 'in_review' => $details->stats->inReview,
                 'completed' => $details->stats->completed,
+                'overdue' => $details->stats->overdue,
                 'progress_percent' => $details->stats->progressPercent,
             ];
         }

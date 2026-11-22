@@ -4,7 +4,9 @@ namespace App\Repositories\Eloquent;
 
 use App\Data\Projects\ProjectFilters;
 use App\Data\Projects\ProjectStatsData;
+use App\Enums\TaskStatus;
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
 use App\Repositories\Contracts\ProjectRepositoryInterface;
@@ -137,13 +139,30 @@ class ProjectRepository extends BaseRepository implements ProjectRepositoryInter
 
     public function statsFor(Project $project): ProjectStatsData
     {
+        $stats = Task::query()
+            ->where('project_id', $project->getKey())
+            ->selectRaw('COUNT(*) AS total_tasks')
+            ->selectRaw('COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) AS pending', [TaskStatus::Todo->value])
+            ->selectRaw('COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) AS in_progress', [TaskStatus::InProgress->value])
+            ->selectRaw('COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) AS in_review', [TaskStatus::InReview->value])
+            ->selectRaw('COALESCE(SUM(CASE WHEN status = ? THEN 1 ELSE 0 END), 0) AS completed', [TaskStatus::Completed->value])
+            ->selectRaw(
+                'COALESCE(SUM(CASE WHEN due_date < ? AND status != ? THEN 1 ELSE 0 END), 0) AS overdue',
+                [today()->toDateString(), TaskStatus::Completed->value],
+            )
+            ->firstOrFail();
+
+        $totalTasks = (int) $stats->getAttribute('total_tasks');
+        $completed = (int) $stats->getAttribute('completed');
+
         return new ProjectStatsData(
-            totalTasks: 0,
-            pending: 0,
-            inProgress: 0,
-            inReview: 0,
-            completed: 0,
-            progressPercent: 0,
+            totalTasks: $totalTasks,
+            pending: (int) $stats->getAttribute('pending'),
+            inProgress: (int) $stats->getAttribute('in_progress'),
+            inReview: (int) $stats->getAttribute('in_review'),
+            completed: $completed,
+            overdue: (int) $stats->getAttribute('overdue'),
+            progressPercent: $totalTasks === 0 ? 0 : (int) round($completed / $totalTasks * 100),
         );
     }
 }

@@ -13,7 +13,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-/** @property-read AvailabilityStatus|null $availability_status */
+/**
+ * @property int $id
+ * @property-read AvailabilityStatus|null $availability_status
+ */
 #[Fillable([
     'name',
     'email',
