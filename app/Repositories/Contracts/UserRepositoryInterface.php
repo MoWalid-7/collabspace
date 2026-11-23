@@ -7,7 +7,6 @@ use App\Models\User;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\UploadedFile;
 
 interface UserRepositoryInterface
 {
@@ -53,7 +52,7 @@ interface UserRepositoryInterface
 
     public function revokeCurrentToken(User $user): void;
 
-    public function storeAvatar(User $user, UploadedFile $avatar): User;
+    public function updateAvatar(User $user, string $path): User;
 
     public function sendPasswordResetLink(string $email): string;
 

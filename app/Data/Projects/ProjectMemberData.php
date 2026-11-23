@@ -8,5 +8,6 @@ readonly class ProjectMemberData
         public int $projectId,
         public int $userId,
         public ?string $roleTitle,
+        public ?int $actorId = null,
     ) {}
 }

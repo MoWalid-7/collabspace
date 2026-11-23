@@ -14,12 +14,13 @@ readonly class UpdateTaskData
         public int $taskId,
         public array $attributes,
         public ?TaskStatus $status,
+        public ?int $actorId = null,
     ) {}
 
     /**
      * @param  array<string, mixed>  $attributes
      */
-    public static function from(int $taskId, array $attributes): self
+    public static function from(int $taskId, array $attributes, ?int $actorId = null): self
     {
         $status = isset($attributes['status'])
             ? TaskStatus::from($attributes['status'])
@@ -31,6 +32,6 @@ readonly class UpdateTaskData
             $attributes['priority'] = TaskPriority::from($attributes['priority']);
         }
 
-        return new self($taskId, $attributes, $status);
+        return new self($taskId, $attributes, $status, $actorId);
     }
 }

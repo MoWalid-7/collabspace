@@ -32,7 +32,7 @@ interface TaskServiceInterface
 
     public function updateProgress(int $taskId, int $progress): Task;
 
-    public function addAssignee(int $taskId, int $userId): Task;
+    public function addAssignee(int $taskId, int $userId, ?int $actorId = null): Task;
 
     public function removeAssignee(int $taskId, int $userId): void;
 }

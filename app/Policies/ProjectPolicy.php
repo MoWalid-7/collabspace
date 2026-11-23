@@ -32,6 +32,19 @@ class ProjectPolicy
         return $this->projects->isVisibleTo($project, (int) $user->getKey());
     }
 
+    public function viewActivities(User $user, Project $project): bool
+    {
+        $role = $this->workspaces->roleForWorkspaceId(
+            (int) $project->workspace_id,
+            (int) $user->getKey(),
+        );
+
+        return $role !== null && (
+            in_array($role, [WorkspaceRole::Admin->value, WorkspaceRole::Manager->value], true)
+            || $this->projects->isMember($project, (int) $user->getKey())
+        );
+    }
+
     public function update(User $user, Project $project): bool
     {
         return $this->canManage($user);

@@ -16,5 +16,6 @@ class TaskStatusChanged implements ShouldDispatchAfterCommit
         public Task $task,
         public TaskStatus $previousStatus,
         public TaskStatus $status,
+        public int $actorId,
     ) {}
 }

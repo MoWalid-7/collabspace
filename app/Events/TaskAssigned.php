@@ -12,5 +12,5 @@ class TaskAssigned implements ShouldDispatchAfterCommit
 {
     use Dispatchable, SerializesModels;
 
-    public function __construct(public Task $task, public User $assignee) {}
+    public function __construct(public Task $task, public User $assignee, public int $actorId) {}
 }

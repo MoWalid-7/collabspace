@@ -62,13 +62,17 @@ class TaskService implements TaskServiceInterface
             $this->tasks->syncAssignees($task, $assigneeIds);
 
             $task = $this->tasks->findInCurrentWorkspaceOrFail((int) $task->getKey());
-            TaskCreated::dispatch($task);
 
-            foreach ($assigneeIds as $assigneeId) {
-                TaskAssigned::dispatch(
-                    $task,
-                    $this->projects->findMemberOrFail($project, $assigneeId),
-                );
+            if ($task->exists) {
+                TaskCreated::dispatch($task);
+
+                foreach ($assigneeIds as $assigneeId) {
+                    TaskAssigned::dispatch(
+                        $task,
+                        $this->projects->findMemberOrFail($project, $assigneeId),
+                        $data->createdBy,
+                    );
+                }
             }
 
             return $task;
@@ -112,6 +116,7 @@ class TaskService implements TaskServiceInterface
                     $task,
                     $data->status,
                     $this->tasks->nextPosition($task->project, $data->status),
+                    $data->actorId ?? (int) $task->created_by,
                 );
             }
 
@@ -123,11 +128,14 @@ class TaskService implements TaskServiceInterface
                 $existingAssigneeIds = array_map('intval', $task->assignees->modelKeys());
                 $this->tasks->syncAssignees($task, $assigneeIds);
 
-                foreach (array_diff($assigneeIds, $existingAssigneeIds) as $assigneeId) {
-                    TaskAssigned::dispatch(
-                        $task,
-                        $this->projects->findMemberOrFail($task->project, (int) $assigneeId),
-                    );
+                if ($task->exists) {
+                    foreach (array_diff($assigneeIds, $existingAssigneeIds) as $assigneeId) {
+                        TaskAssigned::dispatch(
+                            $task,
+                            $this->projects->findMemberOrFail($task->project, (int) $assigneeId),
+                            $data->actorId ?? (int) $task->created_by,
+                        );
+                    }
                 }
             }
 
@@ -145,7 +153,12 @@ class TaskService implements TaskServiceInterface
         return DB::transaction(function () use ($data): Task {
             $task = $this->tasks->findInCurrentWorkspaceOrFail($data->taskId);
 
-            $this->moveWithinTransaction($task, $data->status, $data->position);
+            $this->moveWithinTransaction(
+                $task,
+                $data->status,
+                $data->position,
+                $data->actorId ?? (int) $task->created_by,
+            );
 
             return $this->tasks->findInCurrentWorkspaceOrFail($data->taskId);
         });
@@ -158,7 +171,7 @@ class TaskService implements TaskServiceInterface
         return $this->tasks->updateTask($task, ['progress' => $progress]);
     }
 
-    public function addAssignee(int $taskId, int $userId): Task
+    public function addAssignee(int $taskId, int $userId, ?int $actorId = null): Task
     {
         $task = $this->tasks->findInCurrentWorkspaceOrFail($taskId);
         $project = $task->project;
@@ -169,8 +182,12 @@ class TaskService implements TaskServiceInterface
             ]);
         }
 
-        if ($this->tasks->addAssignee($task, $userId)) {
-            TaskAssigned::dispatch($task, $this->projects->findMemberOrFail($project, $userId));
+        if ($this->tasks->addAssignee($task, $userId) && $task->exists) {
+            TaskAssigned::dispatch(
+                $task,
+                $this->projects->findMemberOrFail($project, $userId),
+                $actorId ?? (int) $task->created_by,
+            );
         }
 
         return $this->tasks->findInCurrentWorkspaceOrFail($taskId);
@@ -209,7 +226,7 @@ class TaskService implements TaskServiceInterface
         }
     }
 
-    private function moveWithinTransaction(Task $task, TaskStatus $status, int $position): void
+    private function moveWithinTransaction(Task $task, TaskStatus $status, int $position, int $actorId): void
     {
         $previousStatus = $task->status;
         $project = $task->project;
@@ -238,9 +255,11 @@ class TaskService implements TaskServiceInterface
                 $attributes['progress'] = 100;
             }
 
-            $this->tasks->updateTask($task, $attributes);
+            $task = $this->tasks->updateTask($task, $attributes);
             $this->tasks->setColumnPositions($previousColumnIds);
-            TaskStatusChanged::dispatch($task, $previousStatus, $status);
+            if ($task->exists) {
+                TaskStatusChanged::dispatch($task, $previousStatus, $status, $actorId);
+            }
         }
 
         $this->tasks->setColumnPositions($nextColumnIds);

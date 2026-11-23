@@ -8,10 +8,14 @@ use App\Data\Profile\UploadAvatarData;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Contracts\ProfileServiceInterface;
+use App\Services\Storage\Contracts\FileStorage;
 
 class ProfileService implements ProfileServiceInterface
 {
-    public function __construct(private UserRepositoryInterface $users) {}
+    public function __construct(
+        private UserRepositoryInterface $users,
+        private FileStorage $fileStorage,
+    ) {}
 
     public function show(int $userId): User
     {
@@ -35,9 +39,15 @@ class ProfileService implements ProfileServiceInterface
 
     public function uploadAvatar(int $userId, UploadAvatarData $data): User
     {
-        return $this->users->storeAvatar(
-            $this->users->findUserOrFail($userId),
-            $data->avatar,
-        );
+        $user = $this->users->findUserOrFail($userId);
+        $oldAvatar = $user->avatar;
+        $storedFile = $this->fileStorage->put($data->avatar, 'avatars');
+        $updatedUser = $this->users->updateAvatar($user, $storedFile->path);
+
+        if ($oldAvatar !== null) {
+            $this->fileStorage->delete((string) config('collabspace.files.disk'), $oldAvatar);
+        }
+
+        return $updatedUser;
     }
 }

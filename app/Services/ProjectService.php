@@ -8,6 +8,8 @@ use App\Data\Projects\ProjectFilters;
 use App\Data\Projects\ProjectMemberData;
 use App\Data\Projects\ProjectTeamData;
 use App\Data\Projects\UpdateProjectData;
+use App\Events\ProjectCreated;
+use App\Events\ProjectMemberAdded;
 use App\Models\Project;
 use App\Models\Team;
 use App\Models\User;
@@ -61,7 +63,13 @@ class ProjectService implements ProjectServiceInterface
                 $this->projects->attachTeam($project, $team);
             }
 
-            return $this->projects->findInCurrentWorkspaceOrFail((int) $project->getKey());
+            $project = $this->projects->findInCurrentWorkspaceOrFail((int) $project->getKey());
+
+            if ($project->exists) {
+                ProjectCreated::dispatch($project, $data->createdBy);
+            }
+
+            return $project;
         });
     }
 
@@ -105,7 +113,13 @@ class ProjectService implements ProjectServiceInterface
             ]);
         }
 
-        return $this->projects->addMember($project, $user, $data->roleTitle);
+        $member = $this->projects->addMember($project, $user, $data->roleTitle);
+
+        if ($data->actorId !== null && $project->exists) {
+            ProjectMemberAdded::dispatch($project, $member, $data->actorId);
+        }
+
+        return $member;
     }
 
     public function removeMember(ProjectMemberData $data): void

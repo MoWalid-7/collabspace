@@ -71,7 +71,7 @@ it('requires the current password to change the profile password', function () {
 });
 
 it('stores a valid avatar upload and rejects a non-image file', function () {
-    Storage::fake('public');
+    Storage::fake('private');
     $user = User::factory()->create();
 
     $response = $this->actingAs($user, 'sanctum')
@@ -82,7 +82,7 @@ it('stores a valid avatar upload and rejects a non-image file', function () {
     $response->assertOk();
     $user->refresh();
     $response->assertJsonPath('data.user.avatar', $user->avatar);
-    Storage::disk('public')->assertExists($user->avatar);
+    Storage::disk('private')->assertExists($user->avatar);
 
     $this->actingAs($user, 'sanctum')
         ->postJson('/api/v1/profile/avatar', [

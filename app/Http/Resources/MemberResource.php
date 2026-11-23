@@ -3,10 +3,15 @@
 namespace App\Http\Resources;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin User */
+/**
+ * @mixin User
+ *
+ * @property-read Pivot|null $pivot
+ */
 class MemberResource extends JsonResource
 {
     /**
@@ -19,7 +24,7 @@ class MemberResource extends JsonResource
             'full_name' => $this->name,
             'email' => $this->email,
             'avatar' => $this->avatar,
-            'role_title' => $this->pivot?->role_title,
+            'role_title' => $this->pivot?->getAttribute('role_title'),
         ];
     }
 }

@@ -117,6 +117,7 @@ class ProjectController
             projectId: $project,
             userId: (int) $request->validated('user_id'),
             roleTitle: $request->validated('role_title'),
+            actorId: (int) $request->user()->getKey(),
         ));
 
         return ApiResponse::created([

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\Projects\ProjectController;
 use Illuminate\Support\Facades\Route;
 
@@ -9,6 +10,9 @@ Route::middleware(['auth:sanctum', 'workspace.current'])->group(function (): voi
     Route::get('/projects/{project}', [ProjectController::class, 'show'])
         ->whereNumber('project')
         ->name('projects.show');
+    Route::get('/projects/{project}/activities', [ActivityController::class, 'project'])
+        ->whereNumber('project')
+        ->name('projects.activities.index');
     Route::match(['put', 'patch'], '/projects/{project}', [ProjectController::class, 'update'])
         ->whereNumber('project')
         ->name('projects.update');

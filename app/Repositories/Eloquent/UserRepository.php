@@ -4,19 +4,15 @@ namespace App\Repositories\Eloquent;
 
 use App\Data\IssuedApiTokenData;
 use App\Models\User;
-use App\Repositories\Contracts\FileStorageRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Password;
 
 class UserRepository extends BaseRepository implements UserRepositoryInterface
 {
-    public function __construct(
-        User $model,
-        private FileStorageRepositoryInterface $fileStorage,
-    ) {
+    public function __construct(User $model)
+    {
         parent::__construct($model);
     }
 
@@ -72,11 +68,9 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
         $user->currentAccessToken()->delete();
     }
 
-    public function storeAvatar(User $user, UploadedFile $avatar): User
+    public function updateAvatar(User $user, string $path): User
     {
-        $oldAvatar = $user->avatar;
-        $user->update(['avatar' => $this->fileStorage->storeAvatar($avatar)]);
-        $this->fileStorage->delete($oldAvatar);
+        $user->update(['avatar' => $path]);
 
         return $user->refresh();
     }

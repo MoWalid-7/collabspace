@@ -14,6 +14,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
+ * @property string|null $avatar
  * @property int $id
  * @property-read AvailabilityStatus|null $availability_status
  */

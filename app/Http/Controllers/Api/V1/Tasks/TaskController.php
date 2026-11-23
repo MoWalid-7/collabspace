@@ -75,7 +75,11 @@ class TaskController extends Controller
     ): JsonResponse {
         return ApiResponse::success([
             'task' => TaskDetailResource::make(
-                $tasks->update(UpdateTaskData::from($task, $request->validated())),
+                $tasks->update(UpdateTaskData::from(
+                    $task,
+                    $request->validated(),
+                    (int) $request->user()->getKey(),
+                )),
             ),
         ], 'Task updated successfully.');
     }
@@ -94,7 +98,11 @@ class TaskController extends Controller
     ): JsonResponse {
         return ApiResponse::success([
             'task' => TaskDetailResource::make(
-                $tasks->move(MoveTaskData::from($task, $request->validated())),
+                $tasks->move(MoveTaskData::from(
+                    $task,
+                    $request->validated(),
+                    (int) $request->user()->getKey(),
+                )),
             ),
         ], 'Task moved successfully.');
     }
@@ -118,7 +126,11 @@ class TaskController extends Controller
     ): JsonResponse {
         return ApiResponse::success([
             'task' => TaskDetailResource::make(
-                $tasks->addAssignee($task, (int) $request->validated('user_id')),
+                $tasks->addAssignee(
+                    $task,
+                    (int) $request->validated('user_id'),
+                    (int) $request->user()->getKey(),
+                ),
             ),
         ], 'Task assignee added successfully.');
     }
