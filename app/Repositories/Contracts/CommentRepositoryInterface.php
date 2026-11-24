@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Contracts;
 
 use App\Models\Comment;
@@ -13,13 +15,9 @@ interface CommentRepositoryInterface
 
     public function paginateForMeeting(Meeting $meeting, int $perPage): LengthAwarePaginator;
 
-    public function paginateForMeeting(\App\Models\Meeting $meeting, int $perPage): LengthAwarePaginator;
-
     public function createForTask(Task $task, int $userId, string $body): Comment;
 
     public function createForMeeting(Meeting $meeting, int $userId, string $body): Comment;
-
-    public function createForMeeting(\App\Models\Meeting $meeting, int $userId, string $body): Comment;
 
     public function findInCurrentWorkspaceOrFail(int $commentId): Comment;
 

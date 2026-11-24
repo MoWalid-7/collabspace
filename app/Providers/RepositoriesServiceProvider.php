@@ -109,9 +109,9 @@ class RepositoriesServiceProvider extends ServiceProvider
         $this->app->bind(MeetingServiceInterface::class, MeetingService::class);
         $this->app->bind(DailyStatusRepositoryInterface::class, DailyStatusRepository::class);
         $this->app->bind(DailyStatusServiceInterface::class, DailyStatusService::class);
-        $this->app->bind(\App\Repositories\Contracts\MeetingRepositoryInterface::class, \App\Repositories\Eloquent\MeetingRepository::class);
-        $this->app->bind(\App\Services\Contracts\MeetingServiceInterface::class, \App\Services\MeetingService::class);
-        $this->app->bind(\App\Repositories\Contracts\DailyStatusRepositoryInterface::class, \App\Repositories\Eloquent\DailyStatusRepository::class);
-        $this->app->bind(\App\Services\Contracts\DailyStatusServiceInterface::class, \App\Services\DailyStatusService::class);
+        $this->app->bind(MeetingRepositoryInterface::class, MeetingRepository::class);
+        $this->app->bind(MeetingServiceInterface::class, MeetingService::class);
+        $this->app->bind(DailyStatusRepositoryInterface::class, DailyStatusRepository::class);
+        $this->app->bind(DailyStatusServiceInterface::class, DailyStatusService::class);
     }
 }
