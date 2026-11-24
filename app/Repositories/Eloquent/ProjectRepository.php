@@ -53,6 +53,15 @@ class ProjectRepository extends BaseRepository implements ProjectRepositoryInter
             ->findOrFail($projectId);
     }
 
+    public function findInWorkspaceOrFail(int $workspaceId, int $projectId): Project
+    {
+        return Project::query()
+            ->where('workspace_id', $workspaceId)
+            ->with(['creator', 'members', 'teams'])
+            ->withCount(['members', 'teams'])
+            ->findOrFail($projectId);
+    }
+
     public function findVisibleToUserOrFail(int $projectId, int $userId, int $workspaceId): Project
     {
         return $this->applyVisibility(Project::query(), $workspaceId, $userId)

@@ -7,6 +7,7 @@ use App\Enums\ProjectStatus;
 use App\Models\Concerns\BelongsToWorkspace;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -75,6 +76,26 @@ class Project extends Model
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    /**
+     * Get all direct members and members via attached teams.
+     *
+     * @return Collection<int, User>
+     */
+    public function allMembers(): Collection
+    {
+        $directMembers = $this->members()->get();
+
+        $teamMembers = User::query()
+            ->whereHas('teams', function ($q) {
+                $q->whereHas('projects', function ($pq) {
+                    $pq->where('projects.id', $this->id);
+                });
+            })
+            ->get();
+
+        return $directMembers->merge($teamMembers)->unique('id');
     }
 
     protected function casts(): array

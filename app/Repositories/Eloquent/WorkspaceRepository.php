@@ -101,4 +101,14 @@ class WorkspaceRepository extends BaseRepository implements WorkspaceRepositoryI
     {
         return $workspace->members()->whereKey($userId)->firstOrFail();
     }
+
+    public function memberUserIds(int $workspaceId): array
+    {
+        return User::query()
+            ->whereHas('workspaces', function ($q) use ($workspaceId) {
+                $q->where('workspaces.id', $workspaceId);
+            })
+            ->pluck('users.id')
+            ->all();
+    }
 }

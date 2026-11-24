@@ -30,6 +30,9 @@ class ActivityDescriber
             ActivityEvent::FileVersionAdded => "{$actor} added a new version of {$file}",
             ActivityEvent::ProjectMemberAdded => "{$actor} added ".(string) ($properties['member_name'] ?? 'a member')." to {$project}",
             ActivityEvent::ProjectCreated => "{$actor} created project {$project}",
+            ActivityEvent::MeetingCreated => "{$actor} scheduled a meeting '".(string) ($properties['meeting_title'] ?? 'Meeting')."'",
+            ActivityEvent::MeetingUpdated => "{$actor} updated meeting '".(string) ($properties['meeting_title'] ?? 'Meeting')."'",
+            ActivityEvent::MeetingCancelled => "{$actor} cancelled meeting '".(string) ($properties['meeting_title'] ?? 'Meeting')."'",
         };
     }
 

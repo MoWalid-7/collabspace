@@ -65,4 +65,9 @@ interface WorkspaceRepositoryInterface
     public function removeMember(Workspace $workspace, int $userId): void;
 
     public function findMemberOrFail(Workspace $workspace, int $userId): User;
+
+    /**
+     * @return array<int, int>
+     */
+    public function memberUserIds(int $workspaceId): array;
 }

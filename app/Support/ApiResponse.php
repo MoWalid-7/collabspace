@@ -25,6 +25,11 @@ class ApiResponse
         return self::success($data, $message, 201);
     }
 
+    public static function ok(mixed $data = null, string $message = 'Success'): JsonResponse
+    {
+        return self::success($data, $message, 200);
+    }
+
     public static function noContent(): Response
     {
         return response()->noContent();

@@ -36,6 +36,8 @@ interface ProjectRepositoryInterface
 
     public function findInCurrentWorkspaceOrFail(int $projectId): Project;
 
+    public function findInWorkspaceOrFail(int $workspaceId, int $projectId): Project;
+
     public function findVisibleToUserOrFail(int $projectId, int $userId, int $workspaceId): Project;
 
     public function applyVisibility(Builder $query, int $workspaceId, int $userId): Builder;

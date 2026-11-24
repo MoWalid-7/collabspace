@@ -16,4 +16,6 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     require __DIR__.'/api/time.php';
     require __DIR__.'/api/reports.php';
     require __DIR__.'/api/chat.php';
+    require __DIR__.'/api/meetings.php';
+    require __DIR__.'/api/daily_statuses.php';
 });

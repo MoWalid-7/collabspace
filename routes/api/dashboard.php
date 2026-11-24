@@ -12,4 +12,5 @@ Route::middleware(['auth:sanctum', 'workspace.current'])
         Route::get('/deadlines', [DashboardController::class, 'deadlines'])->name('deadlines');
         Route::get('/teams', [DashboardController::class, 'teams'])->name('teams');
         Route::get('/recent-files', [DashboardController::class, 'recentFiles'])->name('recent-files');
+        Route::get('/upcoming-meetings', [DashboardController::class, 'upcomingMeetings'])->name('upcoming-meetings');
     });

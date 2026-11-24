@@ -10,4 +10,7 @@ enum NotificationType: string
     case CommentAdded = 'comment_added';
     case FileUploaded = 'file_uploaded';
     case ProjectMemberAdded = 'project_member_added';
+    case MeetingInvited = 'meeting_invited';
+    case MeetingReminder = 'meeting_reminder';
+    case DailyStatusReminder = 'daily_status_reminder';
 }

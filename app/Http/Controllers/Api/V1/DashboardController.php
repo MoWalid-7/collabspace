@@ -11,10 +11,14 @@ use App\Http\Resources\DeadlineResource;
 use App\Http\Resources\ProjectOverviewResource;
 use App\Http\Resources\RecentFileResource;
 use App\Http\Resources\TeamProgressResource;
+use App\Http\Resources\UpcomingMeetingResource;
+use App\Models\User;
+use App\Services\Contracts\MeetingServiceInterface;
 use App\Services\DashboardService;
 use App\Support\ApiResponse;
 use App\Support\CurrentWorkspace;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class DashboardController
 {
@@ -86,5 +90,18 @@ class DashboardController
         );
 
         return ApiResponse::success(['files' => RecentFileResource::collection($files)]);
+    }
+
+    public function upcomingMeetings(
+        Request $request,
+        MeetingServiceInterface $meetingService,
+        CurrentWorkspace $currentWorkspace,
+    ): JsonResponse {
+        $limit = max(1, min(20, (int) $request->query('limit', 5)));
+        /** @var User $user */
+        $user = $request->user();
+        $meetings = $meetingService->getUpcomingMeetings($user, $currentWorkspace->requireId(), $limit);
+
+        return ApiResponse::ok(UpcomingMeetingResource::collection($meetings));
     }
 }

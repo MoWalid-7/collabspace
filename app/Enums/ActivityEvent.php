@@ -12,4 +12,7 @@ enum ActivityEvent: string
     case FileVersionAdded = 'file_version_added';
     case ProjectMemberAdded = 'project_member_added';
     case ProjectCreated = 'project_created';
+    case MeetingCreated = 'meeting_created';
+    case MeetingUpdated = 'meeting_updated';
+    case MeetingCancelled = 'meeting_cancelled';
 }
