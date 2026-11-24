@@ -7,7 +7,6 @@ use App\Enums\ProjectStatus;
 use App\Models\Concerns\BelongsToWorkspace;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -74,28 +73,6 @@ class Project extends Model
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
-    }
-
-    public function scopeVisibleTo(Builder $query, int $userId): void
-    {
-        $query
-            ->whereHas('workspace.members', function (Builder $members) use ($userId): void {
-                $members->whereKey($userId);
-            })
-            ->where(function (Builder $visibility) use ($userId): void {
-                $visibility
-                    ->whereHas('workspace.members', function (Builder $members) use ($userId): void {
-                        $members
-                            ->whereKey($userId)
-                            ->whereIn('workspace_user.role', ['admin', 'manager']);
-                    })
-                    ->orWhereHas('members', function (Builder $members) use ($userId): void {
-                        $members->whereKey($userId);
-                    })
-                    ->orWhereHas('teams.members', function (Builder $members) use ($userId): void {
-                        $members->whereKey($userId);
-                    });
-            });
     }
 
     protected function casts(): array

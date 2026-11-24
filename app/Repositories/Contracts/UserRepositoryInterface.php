@@ -6,6 +6,7 @@ use App\Data\IssuedApiTokenData;
 use App\Models\User;
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 interface UserRepositoryInterface
@@ -29,6 +30,11 @@ interface UserRepositoryInterface
     public function paginate(int $perPage = 15): LengthAwarePaginator;
 
     public function findByEmail(string $email): ?User;
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function searchWorkspaceMembers(int $workspaceId, string $term, int $limit): Collection;
 
     public function findUserOrFail(int $userId): User;
 

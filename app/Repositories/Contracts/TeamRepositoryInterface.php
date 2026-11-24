@@ -6,6 +6,7 @@ use App\Data\Teams\TeamFilters;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 interface TeamRepositoryInterface
@@ -55,4 +56,9 @@ interface TeamRepositoryInterface
     public function updateMemberRoleTitle(Team $team, int $userId, ?string $roleTitle): void;
 
     public function removeMember(Team $team, int $userId): void;
+
+    /**
+     * @return Collection<int, Team>
+     */
+    public function searchInWorkspace(string $term, int $limit, int $workspaceId): Collection;
 }

@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
@@ -31,13 +32,22 @@ interface ProjectRepositoryInterface
 
     public function paginate(int $perPage = 15): LengthAwarePaginator;
 
-    public function paginateFiltered(ProjectFilters $filters, int $userId): LengthAwarePaginator;
+    public function paginateFiltered(ProjectFilters $filters, int $userId, int $workspaceId): LengthAwarePaginator;
 
     public function findInCurrentWorkspaceOrFail(int $projectId): Project;
 
-    public function findVisibleToUserOrFail(int $projectId, int $userId): Project;
+    public function findVisibleToUserOrFail(int $projectId, int $userId, int $workspaceId): Project;
 
-    public function isVisibleTo(Project $project, int $userId): bool;
+    public function applyVisibility(Builder $query, int $workspaceId, int $userId): Builder;
+
+    public function isVisibleTo(Project $project, int $userId, int $workspaceId): bool;
+
+    public function isVisibleToId(int $projectId, int $userId, int $workspaceId): bool;
+
+    /**
+     * @return Collection<int, Project>
+     */
+    public function searchVisible(string $term, int $limit, int $userId, int $workspaceId): Collection;
 
     /**
      * @param  array<string, mixed>  $attributes

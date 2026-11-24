@@ -25,12 +25,20 @@ class TaskPolicy
 
     public function view(User $user, Task $task): bool
     {
-        return $this->projects->isVisibleTo($task->project, (int) $user->getKey());
+        return $this->projects->isVisibleTo(
+            $task->project,
+            (int) $user->getKey(),
+            $this->currentWorkspace->requireId(),
+        );
     }
 
     public function viewTasks(User $user, Project $project): bool
     {
-        return $this->projects->isVisibleTo($project, (int) $user->getKey());
+        return $this->projects->isVisibleTo(
+            $project,
+            (int) $user->getKey(),
+            $this->currentWorkspace->requireId(),
+        );
     }
 
     public function createTask(User $user, Project $project): bool

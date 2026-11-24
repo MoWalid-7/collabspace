@@ -6,7 +6,9 @@ use App\Data\Teams\TeamFilters;
 use App\Models\Team;
 use App\Models\User;
 use App\Repositories\Contracts\TeamRepositoryInterface;
+use App\Support\LikePattern;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 class TeamRepository extends BaseRepository implements TeamRepositoryInterface
 {
@@ -85,5 +87,16 @@ class TeamRepository extends BaseRepository implements TeamRepositoryInterface
     public function removeMember(Team $team, int $userId): void
     {
         $team->members()->detach($userId);
+    }
+
+    public function searchInWorkspace(string $term, int $limit, int $workspaceId): Collection
+    {
+        return Team::query()
+            ->where('workspace_id', $workspaceId)
+            ->whereRaw('LOWER(teams.name) LIKE ? ESCAPE ?', [LikePattern::contains($term), '\\'])
+            ->orderBy('name')
+            ->orderBy('id')
+            ->limit($limit)
+            ->get();
     }
 }

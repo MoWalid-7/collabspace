@@ -10,7 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-/** @property int $id */
+/**
+ * @property int $id
+ * @property int $members_count
+ * @property int $tasks_completed
+ * @property int $tasks_total
+ * @property int $completion_percent
+ */
 #[Fillable(['workspace_id', 'name', 'description', 'lead_id'])]
 class Team extends Model
 {

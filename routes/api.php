@@ -11,4 +11,6 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     require __DIR__.'/api/tasks.php';
     require __DIR__.'/api/files.php';
     require __DIR__.'/api/notifications.php';
+    require __DIR__.'/api/dashboard.php';
+    require __DIR__.'/api/search.php';
 });

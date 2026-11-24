@@ -50,5 +50,16 @@ interface FileRepositoryInterface
     /**
      * @return Collection<int, File>
      */
-    public function recentInWorkspace(int $workspaceId, ?int $projectId, int $limit): Collection;
+    public function recentInWorkspace(
+        int $workspaceId,
+        int $userId,
+        ?int $projectId,
+        bool $mine,
+        int $limit,
+    ): Collection;
+
+    /**
+     * @return Collection<int, File>
+     */
+    public function searchVisible(string $term, int $limit, int $userId, int $workspaceId): Collection;
 }

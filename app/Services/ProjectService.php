@@ -31,9 +31,9 @@ class ProjectService implements ProjectServiceInterface
         private WorkspaceRepositoryInterface $workspaces,
     ) {}
 
-    public function list(ProjectFilters $filters, int $userId): LengthAwarePaginator
+    public function list(ProjectFilters $filters, int $userId, int $workspaceId): LengthAwarePaginator
     {
-        return $this->projects->paginateFiltered($filters, $userId);
+        return $this->projects->paginateFiltered($filters, $userId, $workspaceId);
     }
 
     public function create(CreateProjectData $data): Project
@@ -73,9 +73,9 @@ class ProjectService implements ProjectServiceInterface
         });
     }
 
-    public function show(int $projectId, int $userId): ProjectDetailsData
+    public function show(int $projectId, int $userId, int $workspaceId): ProjectDetailsData
     {
-        $project = $this->projects->findVisibleToUserOrFail($projectId, $userId);
+        $project = $this->projects->findVisibleToUserOrFail($projectId, $userId, $workspaceId);
 
         return new ProjectDetailsData($project, $this->projects->statsFor($project));
     }
@@ -92,9 +92,9 @@ class ProjectService implements ProjectServiceInterface
         $this->projects->softDelete($this->projects->findInCurrentWorkspaceOrFail($projectId));
     }
 
-    public function members(int $projectId, int $userId): Collection
+    public function members(int $projectId, int $userId, int $workspaceId): Collection
     {
-        $project = $this->projects->findVisibleToUserOrFail($projectId, $userId);
+        $project = $this->projects->findVisibleToUserOrFail($projectId, $userId, $workspaceId);
 
         return $this->projects->members($project);
     }

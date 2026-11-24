@@ -5,12 +5,15 @@ namespace App\Repositories\Eloquent;
 use App\Data\Projects\ProjectFilters;
 use App\Data\Projects\ProjectStatsData;
 use App\Enums\TaskStatus;
+use App\Enums\WorkspaceRole;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
 use App\Repositories\Contracts\ProjectRepositoryInterface;
+use App\Support\LikePattern;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 class ProjectRepository extends BaseRepository implements ProjectRepositoryInterface
@@ -20,10 +23,9 @@ class ProjectRepository extends BaseRepository implements ProjectRepositoryInter
         parent::__construct($model);
     }
 
-    public function paginateFiltered(ProjectFilters $filters, int $userId): LengthAwarePaginator
+    public function paginateFiltered(ProjectFilters $filters, int $userId, int $workspaceId): LengthAwarePaginator
     {
-        return Project::query()
-            ->visibleTo($userId)
+        return $this->applyVisibility(Project::query(), $workspaceId, $userId)
             ->withCount(['members', 'teams'])
             ->when($filters->search !== null, function ($query) use ($filters): void {
                 $query->where('name', 'like', '%'.$filters->search.'%');
@@ -51,21 +53,66 @@ class ProjectRepository extends BaseRepository implements ProjectRepositoryInter
             ->findOrFail($projectId);
     }
 
-    public function findVisibleToUserOrFail(int $projectId, int $userId): Project
+    public function findVisibleToUserOrFail(int $projectId, int $userId, int $workspaceId): Project
     {
-        return Project::query()
-            ->visibleTo($userId)
+        return $this->applyVisibility(Project::query(), $workspaceId, $userId)
             ->with(['creator', 'members', 'teams'])
             ->withCount(['members', 'teams'])
             ->findOrFail($projectId);
     }
 
-    public function isVisibleTo(Project $project, int $userId): bool
+    /**
+     * @param  Builder<Project>  $query
+     * @return Builder<Project>
+     */
+    public function applyVisibility(Builder $query, int $workspaceId, int $userId): Builder
     {
-        return Project::query()
-            ->visibleTo($userId)
+        return $query
+            ->where('projects.workspace_id', $workspaceId)
+            ->whereHas('workspace.members', function (Builder $members) use ($userId): void {
+                $members->whereKey($userId);
+            })
+            ->where(function (Builder $visibility) use ($userId): void {
+                $visibility
+                    ->whereHas('workspace.members', function (Builder $members) use ($userId): void {
+                        $members
+                            ->whereKey($userId)
+                            ->whereIn('workspace_user.role', [
+                                WorkspaceRole::Admin->value,
+                                WorkspaceRole::Manager->value,
+                            ]);
+                    })
+                    ->orWhereHas('members', function (Builder $members) use ($userId): void {
+                        $members->whereKey($userId);
+                    })
+                    ->orWhereHas('teams.members', function (Builder $members) use ($userId): void {
+                        $members->whereKey($userId);
+                    });
+            });
+    }
+
+    public function isVisibleTo(Project $project, int $userId, int $workspaceId): bool
+    {
+        return $this->applyVisibility(Project::query(), $workspaceId, $userId)
             ->whereKey($project->getKey())
             ->exists();
+    }
+
+    public function isVisibleToId(int $projectId, int $userId, int $workspaceId): bool
+    {
+        return $this->applyVisibility(Project::query(), $workspaceId, $userId)
+            ->whereKey($projectId)
+            ->exists();
+    }
+
+    public function searchVisible(string $term, int $limit, int $userId, int $workspaceId): Collection
+    {
+        return $this->applyVisibility(Project::query(), $workspaceId, $userId)
+            ->whereRaw('LOWER(projects.name) LIKE ? ESCAPE ?', [LikePattern::contains($term), '\\'])
+            ->orderBy('name')
+            ->orderBy('id')
+            ->limit($limit)
+            ->get();
     }
 
     public function createProject(array $attributes): Project

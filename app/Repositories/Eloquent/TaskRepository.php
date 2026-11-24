@@ -6,12 +6,17 @@ use App\Data\Tasks\TaskFilters;
 use App\Enums\TaskStatus;
 use App\Models\Project;
 use App\Models\Task;
+use App\Repositories\Contracts\ProjectRepositoryInterface;
 use App\Repositories\Contracts\TaskRepositoryInterface;
+use App\Support\LikePattern;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class TaskRepository implements TaskRepositoryInterface
 {
+    public function __construct(private ProjectRepositoryInterface $projects) {}
+
     public function findInCurrentWorkspaceOrFail(int $taskId): Task
     {
         return Task::query()
@@ -49,12 +54,13 @@ class TaskRepository implements TaskRepositoryInterface
         return $columns;
     }
 
-    public function paginateFiltered(TaskFilters $filters, int $userId): LengthAwarePaginator
+    public function paginateFiltered(TaskFilters $filters, int $userId, int $workspaceId): LengthAwarePaginator
     {
         $today = today()->toDateString();
 
         return Task::query()
-            ->whereHas('project', fn (Builder $projects) => $projects->visibleTo($userId))
+            ->where('tasks.workspace_id', $workspaceId)
+            ->whereHas('project', fn (Builder $projects) => $this->projects->applyVisibility($projects, $workspaceId, $userId))
             ->when($filters->mine === true, fn (Builder $query) => $query->whereHas(
                 'assignees',
                 fn (Builder $assignees) => $assignees->whereKey($userId),
@@ -85,6 +91,25 @@ class TaskRepository implements TaskRepositoryInterface
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->paginate($filters->perPage);
+    }
+
+    public function searchVisible(string $term, int $limit, int $userId, int $workspaceId): Collection
+    {
+        return Task::query()
+            ->where('tasks.workspace_id', $workspaceId)
+            ->whereHas('project', fn (Builder $projects) => $this->projects->applyVisibility($projects, $workspaceId, $userId))
+            ->where(function (Builder $query) use ($term): void {
+                $pattern = LikePattern::contains($term);
+
+                $query
+                    ->whereRaw('LOWER(tasks.title) LIKE ? ESCAPE ?', [$pattern, '\\'])
+                    ->orWhereRaw('LOWER(tasks.description) LIKE ? ESCAPE ?', [$pattern, '\\']);
+            })
+            ->with('project:id,name')
+            ->orderBy('title')
+            ->orderBy('id')
+            ->limit($limit)
+            ->get();
     }
 
     public function createTask(array $attributes): Task

@@ -25,11 +25,15 @@ use Illuminate\Http\Response;
 
 class TaskController extends Controller
 {
-    public function index(ListTasksRequest $request, TaskServiceInterface $tasks): JsonResponse
-    {
+    public function index(
+        ListTasksRequest $request,
+        TaskServiceInterface $tasks,
+        CurrentWorkspace $currentWorkspace,
+    ): JsonResponse {
         $paginator = $tasks->list(
             TaskFilters::from($request->validated()),
             (int) $request->user()->getKey(),
+            $currentWorkspace->requireId(),
         );
 
         return ApiResponse::success([

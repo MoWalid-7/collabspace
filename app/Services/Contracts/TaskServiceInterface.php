@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface TaskServiceInterface
 {
-    public function list(TaskFilters $filters, int $userId): LengthAwarePaginator;
+    public function list(TaskFilters $filters, int $userId, int $workspaceId): LengthAwarePaginator;
 
     /**
      * @param  array{search?: string|null, priority?: string|null, assignee_id?: int|null}  $filters

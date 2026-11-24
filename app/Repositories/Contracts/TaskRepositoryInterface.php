@@ -19,7 +19,12 @@ interface TaskRepositoryInterface
      */
     public function board(Project $project, array $filters): array;
 
-    public function paginateFiltered(TaskFilters $filters, int $userId): LengthAwarePaginator;
+    public function paginateFiltered(TaskFilters $filters, int $userId, int $workspaceId): LengthAwarePaginator;
+
+    /**
+     * @return Collection<int, Task>
+     */
+    public function searchVisible(string $term, int $limit, int $userId, int $workspaceId): Collection;
 
     /**
      * @param  array<string, mixed>  $attributes

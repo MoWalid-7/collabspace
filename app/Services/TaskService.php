@@ -26,9 +26,9 @@ class TaskService implements TaskServiceInterface
         private ProjectRepositoryInterface $projects,
     ) {}
 
-    public function list(TaskFilters $filters, int $userId): LengthAwarePaginator
+    public function list(TaskFilters $filters, int $userId, int $workspaceId): LengthAwarePaginator
     {
-        return $this->tasks->paginateFiltered($filters, $userId);
+        return $this->tasks->paginateFiltered($filters, $userId, $workspaceId);
     }
 
     public function board(int $projectId, array $filters): array

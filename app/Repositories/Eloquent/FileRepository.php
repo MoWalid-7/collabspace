@@ -9,12 +9,16 @@ use App\Models\FileVersion;
 use App\Models\Project;
 use App\Models\Task;
 use App\Repositories\Contracts\FileRepositoryInterface;
+use App\Repositories\Contracts\ProjectRepositoryInterface;
+use App\Support\LikePattern;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 class FileRepository implements FileRepositoryInterface
 {
+    public function __construct(private ProjectRepositoryInterface $projects) {}
+
     public function findProjectOrFail(int $projectId): Project
     {
         return Project::query()->findOrFail($projectId);
@@ -127,16 +131,38 @@ class FileRepository implements FileRepositoryInterface
             ->firstOrFail();
     }
 
-    public function recentInWorkspace(int $workspaceId, ?int $projectId, int $limit): Collection
-    {
+    public function recentInWorkspace(
+        int $workspaceId,
+        int $userId,
+        ?int $projectId,
+        bool $mine,
+        int $limit,
+    ): Collection {
         return File::query()
             ->where('workspace_id', $workspaceId)
+            ->whereHas('project', fn (Builder $projects) => $this->projects->applyVisibility($projects, $workspaceId, $userId))
             ->when($projectId !== null, fn (Builder $query) => $query->where('project_id', $projectId))
-            ->with(['uploader', 'currentVersion'])
+            ->when($mine, fn (Builder $query) => $query->whereHas('task', function (Builder $tasks) use ($userId): void {
+                $tasks->whereHas('assignees', fn (Builder $assignees) => $assignees->whereKey($userId));
+            }))
+            ->with(['uploader:id,name,avatar', 'project:id,name', 'currentVersion'])
             ->withCount('versions')
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->limit(max(0, $limit))
+            ->get();
+    }
+
+    public function searchVisible(string $term, int $limit, int $userId, int $workspaceId): Collection
+    {
+        return File::query()
+            ->where('workspace_id', $workspaceId)
+            ->whereHas('project', fn (Builder $projects) => $this->projects->applyVisibility($projects, $workspaceId, $userId))
+            ->whereRaw('LOWER(files.name) LIKE ? ESCAPE ?', [LikePattern::contains($term), '\\'])
+            ->with(['project:id,name', 'task:id,project_id,title'])
+            ->orderBy('name')
+            ->orderBy('id')
+            ->limit($limit)
             ->get();
     }
 }

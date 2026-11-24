@@ -28,11 +28,15 @@ use Illuminate\Http\Response;
 
 class ProjectController
 {
-    public function index(ListProjectsRequest $request, ProjectServiceInterface $projects): JsonResponse
-    {
+    public function index(
+        ListProjectsRequest $request,
+        ProjectServiceInterface $projects,
+        CurrentWorkspace $currentWorkspace,
+    ): JsonResponse {
         $paginator = $projects->list(
             ProjectFilters::from($request->validated()),
             (int) $request->user()->getKey(),
+            $currentWorkspace->requireId(),
         );
 
         return ApiResponse::success([
@@ -65,11 +69,16 @@ class ProjectController
     public function show(
         ShowProjectRequest $request,
         ProjectServiceInterface $projects,
+        CurrentWorkspace $currentWorkspace,
         int $project,
     ): JsonResponse {
         return ApiResponse::success([
             'project' => ProjectResource::make(
-                $projects->show($project, (int) $request->user()->getKey()),
+                $projects->show(
+                    $project,
+                    (int) $request->user()->getKey(),
+                    $currentWorkspace->requireId(),
+                ),
             ),
         ]);
     }
@@ -99,11 +108,16 @@ class ProjectController
     public function members(
         ListProjectMembersRequest $request,
         ProjectServiceInterface $projects,
+        CurrentWorkspace $currentWorkspace,
         int $project,
     ): JsonResponse {
         return ApiResponse::success([
             'members' => MemberResource::collection(
-                $projects->members($project, (int) $request->user()->getKey()),
+                $projects->members(
+                    $project,
+                    (int) $request->user()->getKey(),
+                    $currentWorkspace->requireId(),
+                ),
             ),
         ]);
     }

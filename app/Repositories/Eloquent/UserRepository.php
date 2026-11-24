@@ -5,8 +5,10 @@ namespace App\Repositories\Eloquent;
 use App\Data\IssuedApiTokenData;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Support\LikePattern;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Password;
 
 class UserRepository extends BaseRepository implements UserRepositoryInterface
@@ -19,6 +21,23 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     public function findByEmail(string $email): ?User
     {
         return User::query()->where('email', $email)->first();
+    }
+
+    public function searchWorkspaceMembers(int $workspaceId, string $term, int $limit): Collection
+    {
+        return User::query()
+            ->whereHas('workspaces', fn ($workspaces) => $workspaces->whereKey($workspaceId))
+            ->where(function ($query) use ($term): void {
+                $pattern = LikePattern::contains($term);
+
+                $query
+                    ->whereRaw('LOWER(users.name) LIKE ? ESCAPE ?', [$pattern, '\\'])
+                    ->orWhereRaw('LOWER(users.email) LIKE ? ESCAPE ?', [$pattern, '\\']);
+            })
+            ->orderBy('name')
+            ->orderBy('id')
+            ->limit($limit)
+            ->get();
     }
 
     public function findUserOrFail(int $userId): User

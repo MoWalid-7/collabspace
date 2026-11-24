@@ -29,7 +29,11 @@ class ProjectPolicy
 
     public function view(User $user, Project $project): bool
     {
-        return $this->projects->isVisibleTo($project, (int) $user->getKey());
+        return $this->projects->isVisibleTo(
+            $project,
+            (int) $user->getKey(),
+            $this->currentWorkspace->requireId(),
+        );
     }
 
     public function viewActivities(User $user, Project $project): bool

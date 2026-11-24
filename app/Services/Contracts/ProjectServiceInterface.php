@@ -15,11 +15,11 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface ProjectServiceInterface
 {
-    public function list(ProjectFilters $filters, int $userId): LengthAwarePaginator;
+    public function list(ProjectFilters $filters, int $userId, int $workspaceId): LengthAwarePaginator;
 
     public function create(CreateProjectData $data): Project;
 
-    public function show(int $projectId, int $userId): ProjectDetailsData;
+    public function show(int $projectId, int $userId, int $workspaceId): ProjectDetailsData;
 
     public function update(UpdateProjectData $data): Project;
 
@@ -28,7 +28,7 @@ interface ProjectServiceInterface
     /**
      * @return Collection<int, User>
      */
-    public function members(int $projectId, int $userId): Collection;
+    public function members(int $projectId, int $userId, int $workspaceId): Collection;
 
     public function addMember(ProjectMemberData $data): User;
 
