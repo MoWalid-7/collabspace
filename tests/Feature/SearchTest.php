@@ -88,7 +88,7 @@ it('trims and validates search terms and filters the selected type', function ()
 
     $this->actingAs($admin, 'sanctum')
         ->withHeader('X-Workspace-Id', (string) $workspace->id)
-        ->getJson('/api/v1/search?q=Al&types%5B%5D=messages')
+        ->getJson('/api/v1/search?q=Al&types%5B%5D=unknown')
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['types.0']);
 

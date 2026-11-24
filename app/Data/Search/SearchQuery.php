@@ -20,7 +20,7 @@ readonly class SearchQuery
     {
         return new self(
             term: trim($filters['q']),
-            types: $filters['types'] ?? ['projects', 'tasks', 'files', 'teams', 'members'],
+            types: $filters['types'] ?? ['projects', 'tasks', 'files', 'teams', 'members', 'messages'],
             limit: isset($filters['limit']) ? (int) $filters['limit'] : 5,
         );
     }

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\GoogleIdentityProvider;
 use App\Repositories\Contracts\ActivityRepositoryInterface;
+use App\Repositories\Contracts\ChatRepositoryInterface;
 use App\Repositories\Contracts\CommentRepositoryInterface;
 use App\Repositories\Contracts\DashboardRepositoryInterface;
 use App\Repositories\Contracts\FileRepositoryInterface;
@@ -17,6 +18,7 @@ use App\Repositories\Contracts\TimeTrackingRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\WorkspaceRepositoryInterface;
 use App\Repositories\Eloquent\ActivityRepository;
+use App\Repositories\Eloquent\ChatRepository;
 use App\Repositories\Eloquent\CommentRepository;
 use App\Repositories\Eloquent\DashboardRepository;
 use App\Repositories\Eloquent\FileRepository;
@@ -31,9 +33,11 @@ use App\Repositories\Eloquent\UserRepository;
 use App\Repositories\Eloquent\WorkspaceRepository;
 use App\Services\ActivityService;
 use App\Services\AuthService;
+use App\Services\ChatService;
 use App\Services\CommentService;
 use App\Services\Contracts\ActivityServiceInterface;
 use App\Services\Contracts\AuthServiceInterface;
+use App\Services\Contracts\ChatServiceInterface;
 use App\Services\Contracts\CommentServiceInterface;
 use App\Services\Contracts\FileServiceInterface;
 use App\Services\Contracts\NotificationServiceInterface;
@@ -91,9 +95,7 @@ class RepositoriesServiceProvider extends ServiceProvider
         $this->app->bind(TimeTrackingServiceInterface::class, TimeTrackingService::class);
         $this->app->bind(ReportsRepositoryInterface::class, ReportsRepository::class);
         $this->app->bind(ReportsServiceInterface::class, ReportsService::class);
-        $this->app->bind(\App\Repositories\Contracts\TimeTrackingRepositoryInterface::class, \App\Repositories\Eloquent\TimeTrackingRepository::class);
-        $this->app->bind(\App\Services\Contracts\TimeTrackingServiceInterface::class, \App\Services\TimeTrackingService::class);
-        $this->app->bind(\App\Repositories\Contracts\ReportsRepositoryInterface::class, \App\Repositories\Eloquent\ReportsRepository::class);
-        $this->app->bind(\App\Services\Contracts\ReportsServiceInterface::class, \App\Services\ReportsService::class);
+        $this->app->bind(ChatRepositoryInterface::class, ChatRepository::class);
+        $this->app->bind(ChatServiceInterface::class, ChatService::class);
     }
 }

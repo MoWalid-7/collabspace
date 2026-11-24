@@ -29,8 +29,8 @@ class SearchRequest extends FormRequest
     {
         return [
             'q' => ['required', 'string', 'min:2', 'max:100'],
-            'types' => ['sometimes', 'array', 'max:5'],
-            'types.*' => ['string', 'distinct', Rule::in(['projects', 'tasks', 'files', 'teams', 'members'])],
+            'types' => ['sometimes', 'array', 'max:6'],
+            'types.*' => ['string', 'distinct', Rule::in(['projects', 'tasks', 'files', 'teams', 'members', 'messages'])],
             'limit' => ['sometimes', 'integer', 'min:1', 'max:20'],
         ];
     }

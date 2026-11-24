@@ -65,6 +65,16 @@ class User extends Authenticatable
     }
 
     /**
+     * @return BelongsToMany<Channel, $this>
+     */
+    public function channels(): BelongsToMany
+    {
+        return $this->belongsToMany(Channel::class, 'channel_user')
+            ->withPivot('last_read_at')
+            ->withTimestamps();
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

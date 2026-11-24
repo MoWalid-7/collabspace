@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Data\Search\SearchQuery;
 use App\Models\File;
+use App\Models\Message;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
+use App\Repositories\Contracts\ChatRepositoryInterface;
 use App\Repositories\Contracts\FileRepositoryInterface;
 use App\Repositories\Contracts\ProjectRepositoryInterface;
 use App\Repositories\Contracts\TaskRepositoryInterface;
@@ -23,6 +25,7 @@ class SearchService
         private FileRepositoryInterface $files,
         private TeamRepositoryInterface $teams,
         private UserRepositoryInterface $users,
+        private ChatRepositoryInterface $chat,
     ) {}
 
     /**
@@ -31,7 +34,8 @@ class SearchService
      *     tasks: list<array<string, mixed>>,
      *     files: list<array<string, mixed>>,
      *     teams: list<array<string, mixed>>,
-     *     members: list<array<string, mixed>>
+     *     members: list<array<string, mixed>>,
+     *     messages: list<array<string, mixed>>
      * }
      */
     public function search(SearchQuery $query, int $userId, int $workspaceId): array
@@ -42,6 +46,7 @@ class SearchService
             'files' => [],
             'teams' => [],
             'members' => [],
+            'messages' => [],
         ];
 
         foreach ($query->types as $type) {
@@ -86,6 +91,18 @@ class SearchService
                     'type' => 'member',
                     'title' => $user->name,
                     'subtitle' => $user->job_title,
+                ])->all(),
+                'messages' => $this->chat->searchVisibleMessages(
+                    $query->term,
+                    $query->limit,
+                    $userId,
+                    $workspaceId,
+                )->map(fn (Message $message): array => [
+                    'id' => (int) $message->getKey(),
+                    'type' => 'message',
+                    'title' => $message->body,
+                    'subtitle' => $message->channel->name ?? $message->user->name,
+                    'channel_id' => (int) $message->channel_id,
                 ])->all(),
                 default => throw new LogicException("Unsupported search type [{$type}]."),
             };

@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Events;
+
+use App\Models\Message;
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+
+class MessageSent implements ShouldBroadcast
+{
+    use Dispatchable, SerializesModels;
+
+    public function __construct(public Message $message) {}
+
+    /**
+     * @return array<int, PrivateChannel>
+     */
+    public function broadcastOn(): array
+    {
+        return [
+            new PrivateChannel("channel.{$this->message->channel_id}"),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function broadcastWith(): array
+    {
+        return [
+            'id' => $this->message->id,
+            'channel_id' => $this->message->channel_id,
+            'user_id' => $this->message->user_id,
+            'parent_id' => $this->message->parent_id,
+            'body' => $this->message->body,
+            'edited_at' => $this->message->edited_at?->toISOString(),
+            'created_at' => $this->message->created_at->toISOString(),
+            'user' => [
+                'id' => $this->message->user->id,
+                'name' => $this->message->user->name,
+                'avatar' => $this->message->user->avatar,
+            ],
+        ];
+    }
+}
