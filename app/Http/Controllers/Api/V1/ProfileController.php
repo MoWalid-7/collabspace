@@ -10,8 +10,11 @@ use App\Http\Requests\Profile\UpdatePasswordRequest;
 use App\Http\Requests\Profile\UpdateProfileRequest;
 use App\Http\Requests\Profile\UploadAvatarRequest;
 use App\Http\Resources\UserResource;
+use App\Repositories\Contracts\TaskRepositoryInterface;
 use App\Services\Contracts\ProfileServiceInterface;
+use App\Services\Contracts\TimeTrackingServiceInterface;
 use App\Support\ApiResponse;
+use App\Support\CurrentWorkspace;
 use Illuminate\Http\JsonResponse;
 
 class ProfileController
@@ -61,5 +64,22 @@ class ProfileController
         return ApiResponse::success([
             'user' => UserResource::make($user),
         ], 'Avatar uploaded successfully.');
+    }
+
+    public function stats(
+        TaskRepositoryInterface $tasks,
+        TimeTrackingServiceInterface $timeTracking,
+        CurrentWorkspace $currentWorkspace,
+    ): JsonResponse {
+        $userId = (int) request()->user()->getKey();
+        $workspaceId = $currentWorkspace->requireId();
+
+        $completedTasks = $tasks->countCompletedTasksForUser($workspaceId, $userId);
+        $hoursWorked = $timeTracking->profileHoursWorked($userId, $workspaceId);
+
+        return ApiResponse::success([
+            'completed_tasks' => $completedTasks,
+            'hours_worked' => $hoursWorked,
+        ]);
     }
 }

@@ -177,4 +177,13 @@ class TaskRepository implements TaskRepositoryInterface
     {
         $task->assignees()->detach($userId);
     }
+
+    public function countCompletedTasksForUser(int $workspaceId, int $userId): int
+    {
+        return Task::query()
+            ->where('workspace_id', $workspaceId)
+            ->where('status', TaskStatus::Completed->value)
+            ->whereHas('assignees', fn (Builder $q) => $q->whereKey($userId))
+            ->count();
+    }
 }

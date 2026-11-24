@@ -58,4 +58,6 @@ interface TaskRepositoryInterface
     public function addAssignee(Task $task, int $userId): bool;
 
     public function removeAssignee(Task $task, int $userId): void;
+
+    public function countCompletedTasksForUser(int $workspaceId, int $userId): int;
 }

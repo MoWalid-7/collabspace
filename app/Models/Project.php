@@ -25,6 +25,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $start_date
  * @property Carbon|null $deadline
  * @property int $created_by
+ * @property int|null $tasks_total
+ * @property int|null $tasks_completed
  */
 #[Fillable([
     'workspace_id',
