@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4' # Note: 8.5 is currently in active development / pre-release; 8.4 is the latest stable GA on GitHub Actions runners
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, sqlite3, pdo_sqlite, zip, bcmath, fileinfo
+          coverage: none
+
+      - name: Copy .env.example
+        run: cp .env.example .env
+
+      - name: Install Composer Dependencies
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Generate Application Key
+        run: php artisan key:generate
+
+      - name: Run Pint (Style Check)
+        run: ./vendor/bin/pint --test
+
+      - name: Run Larastan (Static Analysis)
+        run: ./vendor/bin/phpstan analyse --memory-limit=2G
+
+      - name: Run Pest Tests
+        run: ./vendor/bin/pest

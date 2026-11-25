@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ForceJsonApiResponse;
 use App\Http\Middleware\SetCurrentWorkspace;
 use App\Support\ApiResponse;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(ForceJsonApiResponse::class);
         $middleware->alias([
             'workspace.current' => SetCurrentWorkspace::class,
         ]);

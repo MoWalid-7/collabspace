@@ -2,6 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 
+Route::get('/v1/health', function () {
+    return response()->json(['status' => 'ok']);
+})->name('api.v1.health');
+
 Route::prefix('v1')->name('api.v1.')->group(function (): void {
     require __DIR__.'/api/auth.php';
     require __DIR__.'/api/workspaces.php';

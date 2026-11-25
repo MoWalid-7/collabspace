@@ -20,6 +20,12 @@ use App\Policies\TaskPolicy;
 use App\Policies\TeamPolicy;
 use App\Policies\WorkspacePolicy;
 use App\Support\CurrentWorkspace;
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\Parameter;
+use Dedoc\Scramble\Support\Generator\Schema;
+use Dedoc\Scramble\Support\Generator\SecurityScheme;
+use Dedoc\Scramble\Support\Generator\Types\IntegerType;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
@@ -59,5 +65,20 @@ class AppServiceProvider extends ServiceProvider
                 'email' => $user->getEmailForPasswordReset(),
             ]);
         });
+
+        Scramble::configure()
+            ->withDocumentTransformers(function (OpenApi $openApi) {
+                $openApi->secure(
+                    SecurityScheme::http('bearer')
+                );
+            })
+            ->withOperationTransformers(function ($operation) {
+                $operation->addParameters([
+                    (new Parameter('X-Workspace-Id', 'header'))
+                        ->description('Active workspace tenant ID required for all authenticated endpoints')
+                        ->setSchema(Schema::fromType(new IntegerType))
+                        ->example(1),
+                ]);
+            });
     }
 }
